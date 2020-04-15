@@ -18,7 +18,7 @@ static const NSInteger kButtonTag = 100;  //取消按钮100，其他101开始
     KKHandlerBlock _handler;
 }
 @property (nonatomic,strong) UIView *maskView; //阴影遮罩
-@property (nonatomic,strong) UIView *mainView; //主视图
+@property (nonatomic,strong) UIScrollView *mainView; //主视图
 @property (nonatomic,strong) NSArray<UIButton *> *buttons;
 @end
 
@@ -143,7 +143,7 @@ static const NSInteger kButtonTag = 100;  //取消按钮100，其他101开始
     
     NSMutableArray *buttons = [NSMutableArray array];
     if(_style == KKAlertViewStyleAlert){
-        self.mainView = [[UIView alloc]initWithFrame:CGRectMake(_mainViewLeft, 0, _screenWidth - _mainViewLeft * 2, 0)];
+        self.mainView = [[UIScrollView alloc]initWithFrame:CGRectMake(_mainViewLeft, 0, _screenWidth - _mainViewLeft * 2, 0)];
         self.mainView.backgroundColor = [UIColor whiteColor];
         self.mainView.layer.cornerRadius = 5;
         self.mainView.layer.masksToBounds = YES;
@@ -267,10 +267,13 @@ static const NSInteger kButtonTag = 100;  //取消按钮100，其他101开始
         
         self.buttons = [NSArray arrayWithArray:buttons];
         UIButton *btn = [buttons lastObject];
+        CGFloat realHeight = CGRectGetMaxY(btn.frame);
+        CGFloat maxHeight = DEVICE_IS_IPHONEX ? (_screenHeight - 34 * 2) : (_screenHeight - 20 * 2);
         CGRect mainViewRect = self.mainView.frame;
-        mainViewRect.size.height = CGRectGetMaxY(btn.frame);
+        mainViewRect.size.height = realHeight < maxHeight ? realHeight : maxHeight;
         mainViewRect.origin.y = (_screenHeight - mainViewRect.size.height) * 0.5;
         self.mainView.frame = mainViewRect;
+        self.mainView.contentSize = CGSizeMake(0, realHeight);
         
         self.mainView.alpha = 0;
         self.mainView.transform = CGAffineTransformMakeScale(1.2, 1.2);
@@ -279,6 +282,7 @@ static const NSInteger kButtonTag = 100;  //取消按钮100，其他101开始
         [self.maskView addGestureRecognizer:tap];
         
         CGFloat containerH = 0;
+        CGFloat realContainerH = 0;
         CGFloat bottomH = DEVICE_IS_IPHONEX ? 34.f : 10.f;
         CGFloat mainViewH = 0;
         CGFloat itemW = _screenWidth - _sheetItemLeftMargin * 2;
@@ -289,19 +293,26 @@ static const NSInteger kButtonTag = 100;  //取消按钮100，其他101开始
             mainViewH += _lineViewH;
         }
         containerH = mainViewH;
+        realContainerH = containerH;
+        CGFloat containerViewMaxH = _screenHeight - bottomH - (_cancelTitle.length ? _sheetItemH : 0) - _sheetItemSectionMargin - (DEVICE_IS_IPHONEX ? 44 : 20);
+        containerH = containerH < containerViewMaxH ? containerH : containerViewMaxH;
+        mainViewH = containerH;
         if(_cancelTitle.length){
             mainViewH += _sheetItemSectionMargin;
             mainViewH += _sheetItemH;
         }
         mainViewH += bottomH;
-        self.mainView = [[UIView alloc]initWithFrame:CGRectMake(0, _screenHeight, _screenWidth, mainViewH)];
-        self.mainView.backgroundColor = [UIColor clearColor];
-        [self addSubview:self.mainView];
         
-        UIView *containerView = [[UIView alloc]initWithFrame:CGRectMake(_sheetItemLeftMargin, 0, itemW, containerH)];
+        UIScrollView *containerView = [[UIScrollView alloc]initWithFrame:CGRectMake(_sheetItemLeftMargin, 0, itemW, containerH)];
+        containerView.contentSize = CGSizeMake(0, realContainerH);
         containerView.layer.cornerRadius = 10.f;
         containerView.layer.masksToBounds = YES;
         containerView.backgroundColor = [UIColor whiteColor];
+        
+        self.mainView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, _screenHeight, _screenWidth, mainViewH)];
+        self.mainView.backgroundColor = [UIColor clearColor];
+        [self addSubview:self.mainView];
+    
         [self.mainView addSubview:containerView];
         
         CGFloat buttonsY = 0;

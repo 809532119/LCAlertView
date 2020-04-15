@@ -22,11 +22,11 @@
 }
 
 -(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    LCAlertView *alert = [[LCAlertView alloc]initWithStyle:KKAlertViewStyleActionSheet title:@"" message:@"" cancelTitle:@"" otherTitles:@[@"查看",@"快捷"] handler:^(NSInteger index) {
+    LCAlertView *alert = [[LCAlertView alloc]initWithStyle:KKAlertViewStyleAlert title:@"title" message:@"message" cancelTitle:@"取消" otherTitles:@[@"查看"] handler:^(NSInteger index) {
         
     }];
-    alert.otherTitleColor = [UIColor colorWithRed:29/255.0 green:166/255.0 blue:96/255.0 alpha:1];
-    [alert showInView:self.view];
+//    alert.otherTitleColor = [UIColor colorWithRed:29/255.0 green:166/255.0 blue:96/255.0 alpha:1];
+    [alert show];
 }
 
 @end
